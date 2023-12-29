@@ -1,43 +1,55 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect} from 'react';
+import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput} from 'react-native';
 import axios from 'axios';
 
 export default function App() {
-  const [text, changeText] = React.useState();
+  const [newToDoItem, changeNewToDoItemText] = React.useState();
+  const [getResponse, changeTextToGetResponse] = React.useState("Placeholder");
 
-  /*const fetchApi = async () => {
-    try{
-    const res = await axios.get('http://192.168.0.22:5197/pivo');
-    console.log("podarilo sa");
-    }
-    catch(error)
-    {
-      console.log(error.message);
+  
+// Passing configuration object to axios
+  axios({
+    method: 'get',
+    url: `http://10.0.2.2:5197/martin`,
+  }).then((response) => {
+    console.log(response.data);
+    changeTextToGetResponse(response.data);
+  }).catch(error => {
+    console.error(error);
+  });
+
+
+  const data = {
+    message: {newToDoItem}
+  };
+  
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
     }
   };
 
-  useEffect(() => {
-    fetchApi();
-  }, [])*/
-  
-  fetch('http://localhost:5197/martin')
-  .then(response => response.text())
-  .then(data => {
-    console.log(data);
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+
+  axios.post('http://10.0.2.2:5197/NewItem', data, config)
+    .then(response => {
+      console.log(response.data);
+    })
+    .catch(error => {
+      console.error(error);
+    });
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto"/>
       <TextInput 
-      value={text} 
-      onChangeText={changeText}
+      value={newToDoItem} 
+      onChangeText={changeNewToDoItemText}
+      onSubmitEditing={() => {
+        changeNewToDoItemText('Write yourself an objetive');
+      }}
       placeholder='Write yourself an objetive' />
-      <Text>{text}</Text>
+      <Text>{getResponse} </Text>
     </View>
   );
 }
