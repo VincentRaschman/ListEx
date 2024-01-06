@@ -20,7 +20,6 @@ const DATA = [
 
 
 export default function App() {
-  const [getResponse, changeTextToGetResponse] = React.useState("Placeholder");
   const [newToDoItem, changeNewToDoItemText] = React.useState();
   const [toDoList, setToDoList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +36,6 @@ export default function App() {
     url: `http://10.0.2.2:5197/martin`,
   }).then((response) => {
     console.log(response.data);
-    changeTextToGetResponse(response.data);
   }).catch(error => {
     console.error(error);
   });
