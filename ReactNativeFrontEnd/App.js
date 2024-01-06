@@ -3,61 +3,31 @@ import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, Switch} from 'react-native';
 import axios from 'axios';
 
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    title: 'Third Item',
-  },
-];
-
-
 export default function App() {
   const [newToDoItem, changeNewToDoItemText] = React.useState();
   const [toDoList, setToDoList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-
-
   useEffect(() => {
     getToDoList();
   }, []);
 
-  // Passing configuration object to axios
-  axios({
-    method: 'get',
-    url: `http://10.0.2.2:5197/martin`,
-  }).then((response) => {
-    console.log(response.data);
-  }).catch(error => {
-    console.error(error);
-  });
+  axios.get('http://10.0.2.2:5197/martin')
+  .then(response => console.log(response.data))
+  .catch(console.error);
 
-  const getToDoList = () => {
-    axios({
-      method: 'get',
-      url: `http://10.0.2.2:5197/ToDoList`,
-    }).then((response) => {
-      setToDoList(response.data.listOfToDoItems);
-      setIsLoading(false); // Set loading to false after data is fetched
-
-      console.log(toDoList);
-
-      // Iterate over the array
-      for(let i = 0; i < toDoList.length; i++) {
-        console.log(toDoList[i].name);
-      }
-      
-    }).catch(error => {
-      console.error(error);
-    });
+  const  getToDoList = () => {
+    axios.get('http://10.0.2.2:5197/ToDoList')
+      .then((response) => {
+        setToDoList(response.data.listOfToDoItems);
+        setIsLoading(false); // Set loading to false after data is fetched
+      })
+      .then(() => {
+        // Log and iterate over the array after state has been updated
+        console.log(toDoList);
+        toDoList.forEach(item => console.log(item.name));
+      })
+      .catch(console.error);
   }
 
   const ToggleCompletitionOfItem = (isComplete, id) => {
@@ -82,7 +52,7 @@ export default function App() {
       });
   }
 
-  const postNewItem = () => {
+  const postNewItem = async () => {
     const data = {
       message: String(newToDoItem)
     };
@@ -93,9 +63,11 @@ export default function App() {
       }
     };
 
-    axios.post('http://10.0.2.2:5197/NewItem', data, config)
-      .then(response => {
-        console.log(response.data);
+    await axios.post('http://10.0.2.2:5197/NewItem', data, config)
+      .then(response => {        
+        console.log("podo mnou bude prazdny riadok");
+
+        console.log(response.status);
       })
       .catch(error => {
         console.error(error);
@@ -119,9 +91,9 @@ export default function App() {
       <TextInput 
       value={newToDoItem} 
       onChangeText={changeNewToDoItemText}
-      onSubmitEditing={() => {
+      onSubmitEditing={async() => {
         changeNewToDoItemText('Write yourself an objetive');
-        postNewItem();
+        await postNewItem();
         getToDoList();
       }}
       placeholder='Write yourself an objetive' />

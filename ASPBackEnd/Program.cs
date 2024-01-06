@@ -11,9 +11,14 @@ app.MapGet("/pivo", () => "Plzeň");
 
 app.MapGet("/martin", () => "Paštika");
 
-app.MapGet("/ToDoList", () => toDoList);
+app.MapGet("/ToDoList", () => {
+    Console.WriteLine("Vraciam get");
+    return toDoList;
+    });
 
 app.MapPost("/NewItem", async (HttpRequest request) => {
+    Console.WriteLine("spracovavam post");
+
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     Console.WriteLine(body);
 
@@ -22,6 +27,8 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
 
     toDoList.AddItem(message);
     ToDoList.WriteOutTheContentOfAList(toDoList);
+    Console.WriteLine("koncim post");
+
 });
 
 app.MapPost("/ToggleCompletitionOfItem", async (HttpRequest request) => {
@@ -32,6 +39,16 @@ app.MapPost("/ToggleCompletitionOfItem", async (HttpRequest request) => {
     Console.WriteLine(oldState);
     Console.WriteLine(itemId);
     toDoList.ToggleItem(itemId);
+});
+
+app.MapPost("/ChangeNameOfAnItem", async (HttpRequest request) => {
+    var body = await new StreamReader(request.Body).ReadToEndAsync();
+    var jsonDocument = JsonDocument.Parse(body);
+    var newName = jsonDocument.RootElement.GetProperty("Newname").GetString();
+    var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
+    Console.WriteLine(newName);
+    Console.WriteLine(itemId);
+    toDoList.ChangeNameOfAnItem(itemId, newName);
 });
 
 app.Run();

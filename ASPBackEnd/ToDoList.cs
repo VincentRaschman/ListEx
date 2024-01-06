@@ -14,6 +14,10 @@ public class ToDoList
     {
         ListOfToDoItems[itemId].IsComplete = !(ListOfToDoItems[itemId].IsComplete);
     }
+    public void ChangeNameOfAnItem(int itemId, string newName)
+    {
+        ListOfToDoItems[itemId].Name = newName;
+    }
     public static void WriteOutTheContentOfAList(ToDoList toDoListToWriteOut)
     {
         foreach(var item in toDoListToWriteOut.ListOfToDoItems)
