@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, TextInput, FlatList, Switch} from 'react-native
 import axios from 'axios';
 
 export default function App() {
-  const [newToDoItem, changeNewToDoItemText] = React.useState();
+  const [newToDoItem, changeNewToDoItemText] = React.useState(null);
   const [toDoList, setToDoList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -92,9 +92,12 @@ export default function App() {
       value={newToDoItem} 
       onChangeText={changeNewToDoItemText}
       onSubmitEditing={async() => {
-        changeNewToDoItemText('Write yourself an objetive');
-        await postNewItem();
-        getToDoList();
+        // need to add input sanity check
+        if (newToDoItem != null) {
+          await postNewItem();
+          getToDoList();
+          changeNewToDoItemText(null);
+        }
       }}
       placeholder='Write yourself an objetive' />
       
