@@ -9,21 +9,23 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("useEffect hook triggered");
     getToDoList();
   }, []);
 
-  axios.get('http://10.0.2.2:5197/martin')
-  .then(response => console.log(response.data))
-  .catch(console.error);
+  const Pastika = () => {
+    axios.get('http://10.0.2.2:5197/martin')
+    .then(response => console.log(response.data))
+    .catch(console.error);
+  }
 
-  const  getToDoList = () => {
+  const getToDoList = () => {
     axios.get('http://10.0.2.2:5197/ToDoList')
       .then((response) => {
         setToDoList(response.data.listOfToDoItems);
-        setIsLoading(false); // Set loading to false after data is fetched
+        setIsLoading(false);
       })
       .then(() => {
-        // Log and iterate over the array after state has been updated
         console.log(toDoList);
         toDoList.forEach(item => console.log(item.name));
       })
@@ -52,9 +54,26 @@ export default function App() {
       });
   }
 
+  const ChangeItemName = (newName, id) => {
+    const data = {
+      newName: String(newName),
+      id: String(id)
+    };
+
+    axios.post('http://10.0.2.2:5197/ChangeNameOfAnItem', data)
+      .then(response => {
+        console.log("Sending new name to backend");
+        getToDoList();
+      })
+      .catch(error => {
+        console.log("New item name was not sent to server");
+        console.error(error);
+      });
+  }
+
   const postNewItem = async () => {
     const data = {
-      message: String(newToDoItem)
+      itemName: String(newToDoItem)
     };
     
     const config = {
@@ -65,36 +84,47 @@ export default function App() {
 
     await axios.post('http://10.0.2.2:5197/NewItem', data, config)
       .then(response => {        
-        console.log("podo mnou bude prazdny riadok");
-
+        console.log("New item sent to server");
         console.log(response.status);
       })
       .catch(error => {
+        console.log("New Item was not sent to server");
         console.error(error);
       });
   }
 
-  const ToDoItem = ({name, isComplete, id}) => (
-  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-    <Text>{name}</Text>
-    <Switch
-     onValueChange={() => ToggleCompletitionOfItem(isComplete, id)}
-     value={toDoList[id].isComplete}
-    />
+  const ToDoItem = ({name, isComplete, id}) => {
+    const [itemName, setItemName] = useState(name);
+    return(
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <TextInput 
+        
+          onBlur={(name ==  itemName) ? () => {} : ChangeItemName(itemName, id)}
+          //onBlur={() => {console.log("OnBlur was triggered");}}
+          value={itemName} 
+          onChangeText={setItemName}
+          />
+        <Switch
+        onValueChange={() => ToggleCompletitionOfItem(isComplete, id)}
+        value={toDoList[id].isComplete}
+        />
 
-  </View>
-  );
+      </View>
+    )
+  };
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto"/>
       <TextInput 
+      onBlur={() => console.log('Input field blurred')}
       value={newToDoItem} 
       onChangeText={changeNewToDoItemText}
       onSubmitEditing={async() => {
-        // need to add input sanity check
+        // Nseed to add input sanity check
         if (newToDoItem != null) {
           await postNewItem();
+          // Updates and re-render list with new item
           getToDoList();
           changeNewToDoItemText(null);
         }

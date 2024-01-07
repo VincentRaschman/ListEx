@@ -20,15 +20,14 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
     Console.WriteLine("spracovavam post");
 
     var body = await new StreamReader(request.Body).ReadToEndAsync();
-    Console.WriteLine(body);
 
     var jsonDocument = JsonDocument.Parse(body);
-    var message = jsonDocument.RootElement.GetProperty("message").GetString();
+    var itemName = jsonDocument.RootElement.GetProperty("itemName").GetString();
 
-    toDoList.AddItem(message);
+    toDoList.AddItem(itemName);
+    Console.WriteLine("koncim post, item vytvoreny : {0}", itemName);
+    Console.WriteLine("Cely list:");
     ToDoList.WriteOutTheContentOfAList(toDoList);
-    Console.WriteLine("koncim post");
-
 });
 
 app.MapPost("/ToggleCompletitionOfItem", async (HttpRequest request) => {
@@ -36,7 +35,7 @@ app.MapPost("/ToggleCompletitionOfItem", async (HttpRequest request) => {
     var jsonDocument = JsonDocument.Parse(body);
     var oldState = bool.Parse(jsonDocument.RootElement.GetProperty("message").GetString());
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
-    Console.WriteLine(oldState);
+    Console.WriteLine("Items: {0} completion attribute was toggled. Old state {1}", itemId, oldState);
     Console.WriteLine(itemId);
     toDoList.ToggleItem(itemId);
 });
@@ -44,11 +43,13 @@ app.MapPost("/ToggleCompletitionOfItem", async (HttpRequest request) => {
 app.MapPost("/ChangeNameOfAnItem", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);
-    var newName = jsonDocument.RootElement.GetProperty("Newname").GetString();
+    var newName = jsonDocument.RootElement.GetProperty("newName").GetString();
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
+    Console.WriteLine("Changing name of item with id: {0} to new name {1}", itemId, newName);
     Console.WriteLine(newName);
     Console.WriteLine(itemId);
     toDoList.ChangeNameOfAnItem(itemId, newName);
+
 });
 
 app.Run();
