@@ -38,13 +38,7 @@ export default function App() {
       id: String(id)
     };
 
-    const config = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-
-    axios.post('http://10.0.2.2:5197/ToggleCompletitionOfItem', data, config)
+    axios.post('http://10.0.2.2:5197/ToggleCompletitionOfItem', data)
       .then(response => {
         console.log("hurmakaki");
         getToDoList();
@@ -75,14 +69,8 @@ export default function App() {
     const data = {
       itemName: String(newToDoItem)
     };
-    
-    const config = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
 
-    await axios.post('http://10.0.2.2:5197/NewItem', data, config)
+    await axios.post('http://10.0.2.2:5197/NewItem', data)
       .then(response => {        
         console.log("New item sent to server");
         console.log(response.status);
@@ -95,11 +83,14 @@ export default function App() {
 
   const ToDoItem = ({name, isComplete, id}) => {
     const [itemName, setItemName] = useState(name);
+    const handleBlur = () => { 
+      (name ==  itemName) ? () => {console.log("terneri condition");} : ChangeItemName(itemName, id)
+    };
     return(
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <TextInput 
-        
-          onBlur={(name ==  itemName) ? () => {} : ChangeItemName(itemName, id)}
+          placeholder="Write yourself an objetive"
+          onBlur={handleBlur}
           //onBlur={() => {console.log("OnBlur was triggered");}}
           value={itemName} 
           onChangeText={setItemName}
