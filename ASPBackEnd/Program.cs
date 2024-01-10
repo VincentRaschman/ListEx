@@ -49,7 +49,15 @@ app.MapPost("/ChangeNameOfAnItem", async (HttpRequest request) => {
     Console.WriteLine(newName);
     Console.WriteLine(itemId);
     toDoList.ChangeNameOfAnItem(itemId, newName);
+});
 
+app.MapPost("/DeleteItem", async (HttpRequest request) => {
+    var body = await new StreamReader(request.Body).ReadToEndAsync();
+    var jsonDocument = JsonDocument.Parse(body);
+    var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
+    Console.WriteLine("Deleting item {0}", itemId);
+    Console.WriteLine(itemId);
+    toDoList.DeleteItem(itemId);
 });
 
 app.Run();

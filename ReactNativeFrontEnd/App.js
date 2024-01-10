@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, Switch} from 'react-native';
+import { StyleSheet, Text, View, TextInput, FlatList, Switch, Pressable} from 'react-native';
 import axios from 'axios';
 
 export default function App() {
@@ -65,13 +65,29 @@ export default function App() {
       });
   }
 
+  const DeleteItem = (id) => {
+    const data = {
+      id: String(id)
+    };
+
+    axios.post('http://10.0.2.2:5197/DeleteItem', data)
+      .then(response => {
+        console.log("Deleting item");
+        getToDoList();
+      })
+      .catch(error => {
+        console.log("Item was not deleted");
+        console.error(error);
+      });
+  }
+
   const postNewItem = async () => {
     const data = {
       itemName: String(newToDoItem)
     };
 
     await axios.post('http://10.0.2.2:5197/NewItem', data)
-      .then(response => {        
+      .then(response => {
         console.log("New item sent to server");
         console.log(response.status);
       })
@@ -86,12 +102,14 @@ export default function App() {
     const handleBlur = () => { 
       (name ==  itemName) ? () => {console.log("terneri condition");} : ChangeItemName(itemName, id)
     };
+    const handleOnPress = (id) => { 
+      DeleteItem(id)
+    };
     return(
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <TextInput 
           placeholder="Write yourself an objetive"
           onBlur={handleBlur}
-          //onBlur={() => {console.log("OnBlur was triggered");}}
           value={itemName} 
           onChangeText={setItemName}
           />
@@ -99,7 +117,9 @@ export default function App() {
         onValueChange={() => ToggleCompletitionOfItem(isComplete, id)}
         value={toDoList[id].isComplete}
         />
-
+        <Pressable onPress={() => handleOnPress(id)}>
+          <Text>Delete</Text>
+        </Pressable>
       </View>
     )
   };
@@ -108,7 +128,6 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar style="auto"/>
       <TextInput 
-      onBlur={() => console.log('Input field blurred')}
       value={newToDoItem} 
       onChangeText={changeNewToDoItemText}
       onSubmitEditing={async() => {

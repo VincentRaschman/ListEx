@@ -18,6 +18,10 @@ public class ToDoList
     {
         ListOfToDoItems[itemId].Name = newName;
     }
+    public void DeleteItem(int itemId)
+    {
+        ListOfToDoItems.RemoveAt(itemId);
+    }
     public static void WriteOutTheContentOfAList(ToDoList toDoListToWriteOut)
     {
         foreach(var item in toDoListToWriteOut.ListOfToDoItems)
