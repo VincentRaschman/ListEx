@@ -4,13 +4,14 @@ import { StyleSheet, Text, View, TextInput, FlatList, Switch, Pressable} from 'r
 import axios from 'axios';
 
 export default function App() {
-  const [newToDoItem, changeNewToDoItemText] = React.useState(null);
   const [toDoList, setToDoList] = useState([]);
+  const [toDoLists, setToDoLists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [newToDoListname, setToDoListname] = useState(null)
 
   useEffect(() => {
     console.log("useEffect hook triggered");
-    getToDoList();
+    GetAllToDoLists();
   }, []);
 
   const Pastika = () => {
@@ -19,11 +20,10 @@ export default function App() {
     .catch(console.error);
   }
 
-  const getToDoList = () => {
-    axios.get('http://10.0.2.2:5197/ToDoList')
+  const getToDoList = (id) => {
+    axios.get(`http://10.0.2.2:5197/GetOneToDoList?id=${id}`)
       .then((response) => {
         setToDoList(response.data.listOfToDoItems);
-        setIsLoading(false);
       })
       .then(() => {
         console.log(toDoList);
@@ -32,10 +32,23 @@ export default function App() {
       .catch(console.error);
   }
 
-  const ToggleCompletitionOfItem = (isComplete, id) => {
+  const GetAllToDoLists = () => {
+    axios.get(`http://10.0.2.2:5197/GetAllToDoLists`)
+      .then((response) => {
+        setToDoLists(response.data.toDoLists)
+        setIsLoading(false);
+      })
+      .then(() => {
+        console.log(toDoList);
+      })
+      .catch(console.error);
+  }
+
+  const ToggleCompletitionOfItem = (isComplete, id, listId) => {
     const data = {
       message: String(isComplete),
-      id: String(id)
+      id: String(id),
+      listId: String(listId)
     };
 
     axios.post('http://10.0.2.2:5197/ToggleCompletitionOfItem', data)
@@ -48,10 +61,11 @@ export default function App() {
       });
   }
 
-  const ChangeItemName = (newName, id) => {
+  const ChangeItemName = (newName, id, listId) => {
     const data = {
       newName: String(newName),
-      id: String(id)
+      id: String(id),
+      listId: String(listId)
     };
 
     axios.post('http://10.0.2.2:5197/ChangeNameOfAnItem', data)
@@ -81,9 +95,10 @@ export default function App() {
       });
   }
 
-  const postNewItem = async () => {
+  const postNewItem = async (newToDoItem, listId) => {
     const data = {
-      itemName: String(newToDoItem)
+      itemName: String(newToDoItem),
+      listId: String(listId)
     };
 
     await axios.post('http://10.0.2.2:5197/NewItem', data)
@@ -97,13 +112,29 @@ export default function App() {
       });
   }
 
-  const ToDoItem = ({name, isComplete, id}) => {
+  const postNewList= async () => {
+    const data = {
+      listName: String(newToDoListname)
+    };
+
+    await axios.post('http://10.0.2.2:5197/NewList', data)
+      .then(response => {
+        console.log("New list created");
+        console.log(response.status);
+      })
+      .catch(error => {
+        console.log("New list was not created");
+        console.error(error);
+      });
+  }
+
+  const ToDoItem = ({name, isComplete, id, listId}) => {
     const [itemName, setItemName] = useState(name);
     const handleBlur = () => { 
-      (name ==  itemName) ? () => {console.log("terneri condition");} : ChangeItemName(itemName, id)
+      (name ==  itemName) ? () => {console.log("terneri condition");} : ChangeItemName(itemName, id, listId)
     };
     const handleOnPress = (id) => { 
-      DeleteItem(id)
+      DeleteItem(id, listId)
     };
     return(
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -114,7 +145,7 @@ export default function App() {
           onChangeText={setItemName}
           />
         <Switch
-        onValueChange={() => ToggleCompletitionOfItem(isComplete, id)}
+        onValueChange={() => ToggleCompletitionOfItem(isComplete, id, listId)}
         value={toDoList[id].isComplete}
         />
         <Pressable onPress={() => handleOnPress(id)}>
@@ -124,39 +155,71 @@ export default function App() {
     )
   };
 
+  const ToDoList = ({listName, listId}) => {
+    const [listId, setListId] = useState(listId);
+    const [listName, setListName] = useState(listName);
+    const [newToDoItem, changeNewToDoItemText] = React.useState(null);
+    <View>
+      <Text>{listName}</Text>
+      <TextInput 
+        value={newToDoItem} 
+        onChangeText={changeNewToDoItemText}
+        onSubmitEditing={async() => {
+          // Nseed to add input sanity check
+          if (newToDoItem != null) {
+            await postNewItem(newToDoItem, listId);
+            // Updates and re-render list with new item
+            getToDoList();
+            changeNewToDoItemText(null);
+          }
+        }}
+        placeholder='Write yourself an objetive' />
+        
+        {isLoading ? (
+          <Text>Loading...</Text> // Display loading message while data is being fetched
+        ) : (
+          toDoList.length > 0 && 
+          <Text></Text>
+          
+        )}
+
+        <FlatList
+          horizontal={false}
+          data={toDoList}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => <ToDoItem name={item.name} isComplete={item.isComplete} id={item.id} listId={listId}/>}
+        />
+      </View>
+  }
+
   return (
+    (
     <View style={styles.container}>
       <StatusBar style="auto"/>
       <TextInput 
-      value={newToDoItem} 
-      onChangeText={changeNewToDoItemText}
-      onSubmitEditing={async() => {
-        // Nseed to add input sanity check
-        if (newToDoItem != null) {
-          await postNewItem();
-          // Updates and re-render list with new item
-          getToDoList();
-          changeNewToDoItemText(null);
-        }
-      }}
-      placeholder='Write yourself an objetive' />
-      
-      {isLoading ? (
-        <Text>Loading...</Text> // Display loading message while data is being fetched
-      ) : (
-        toDoList.length > 0 && 
-        <Text></Text>
-        
-      )}
-
+          placeholder="Create new to do list!"
+          //onBlur={handleBlur}
+          value={newToDoListname} 
+          onChangeText={setToDoListname}
+          onSubmitEditing={async() => {
+            // Nseed to add input sanity check
+            if (newToDoListname != null) {
+              await postNewList();
+              // Updates and re-render list with new item
+              setToDoListname(null);
+            }
+          }}
+          />
+      <ToDoList listName={newToDoListname}/>
       <FlatList
-        horizontal={false}
-        data={toDoList}
-        keyExtractor={item => item.id}
-        renderItem={({item}) => <ToDoItem name={item.name} isComplete={item.isComplete} id={item.id}/>}
-      />
+          horizontal={false}
+          data={toDoLists}
+          keyExtractor={list => list.id}
+          renderItem={({list}) => <ToDoList listName={list.name} listId={list.id}/>}
+        />
     </View>
-  );
+    )
+    );
 }
 
 const styles = StyleSheet.create({

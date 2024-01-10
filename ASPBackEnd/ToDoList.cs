@@ -1,9 +1,13 @@
 public class ToDoList
 {
     public List<ToDoItem> ListOfToDoItems { get; set; }
-    public ToDoList()
+    public string ListName{ get; set;}
+    public int Id { get;}
+    public ToDoList(string listName, int id)
     {
+        ListName = listName;
         ListOfToDoItems = new List<ToDoItem>();
+        Id = id;
     }
     public void AddItem(string name, string? tag = null)
     {
