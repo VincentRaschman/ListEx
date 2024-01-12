@@ -14,13 +14,51 @@ export default function App() {
     GetAllToDoLists();
   }, []);
 
+  useEffect(() => {
+    console.log("All lists returned from the server:");
+    console.log("Lists in memory:");
+    console.log(toDoLists);
+    console.log("Foreach log:");
+    toDoLists.forEach(item => console.log(item.listName));
+
+    console.log("Logging first lists items:");
+    //console.log(toDoLists[0].listOfToDoItems);
+    //toDoLists[0].isEmpty ? (console.log("empty")) : (console.log("not empty"));
+    
+    if(toDoLists != [] && typeof toDoLists != "undefined" && typeof toDoLists != null)
+    {
+      console.log("vsetko je ok");
+      console.log(typeof toDoLists);
+      console.log(Array.isArray(toDoLists));
+      console.log(toDoLists);
+      console.log(toDoLists.length);
+
+      if (toDoLists.length == 0) {
+        console.log("ziadne listy nie su na frontende");
+      }
+      console.log(typeof toDoLists[0]);
+      console.log(typeof toDoLists[1]);
+
+      /*console.log(toDoLists[0].listOfToDoItems);
+      console.log(toDoLists[1].listOfToDoItems);*/
+
+    }
+    else
+    {
+      console.log("vsetko je na hovno");
+    }
+
+
+    setIsLoading(false);
+  }, [toDoLists]);
+
   const Pastika = () => {
     axios.get('http://10.0.2.2:5197/martin')
     .then(response => console.log(response.data))
     .catch(console.error);
   }
 
-  const getToDoList = (id) => {
+  /*const getToDoList = (id) => {
     axios.get(`http://10.0.2.2:5197/GetOneToDoList?id=${id}`)
       .then((response) => {
         setToDoList(response.data.listOfToDoItems);
@@ -30,18 +68,13 @@ export default function App() {
         toDoList.forEach(item => console.log(item.name));
       })
       .catch(console.error);
-  }
+  }*/
 
-  const GetAllToDoLists = () => {
+  const GetAllToDoLists = async() => {
     axios.get(`http://10.0.2.2:5197/GetAllToDoLists`)
       .then((response) => {
-        setToDoLists(response.data.toDoLists)
-        setIsLoading(false);
-      })
-      .then(() => {
-        console.log(toDoList);
-      })
-      .catch(console.error);
+        setToDoLists(response.data)
+      }).catch(console.error);
   }
 
   const ToggleCompletitionOfItem = (isComplete, id, listId) => {
@@ -54,7 +87,8 @@ export default function App() {
     axios.post('http://10.0.2.2:5197/ToggleCompletitionOfItem', data)
       .then(response => {
         console.log("hurmakaki");
-        getToDoList();
+        GetAllToDoLists();
+        ///getToDoList();
       })
       .catch(error => {
         console.error(error);
@@ -71,7 +105,8 @@ export default function App() {
     axios.post('http://10.0.2.2:5197/ChangeNameOfAnItem', data)
       .then(response => {
         console.log("Sending new name to backend");
-        getToDoList();
+        GetAllToDoLists();
+        ///getToDoList();
       })
       .catch(error => {
         console.log("New item name was not sent to server");
@@ -87,7 +122,8 @@ export default function App() {
     axios.post('http://10.0.2.2:5197/DeleteItem', data)
       .then(response => {
         console.log("Deleting item");
-        getToDoList();
+        ///getToDoList();
+        GetAllToDoLists();
       })
       .catch(error => {
         console.log("Item was not deleted");
@@ -96,6 +132,9 @@ export default function App() {
   }
 
   const postNewItem = async (newToDoItem, listId) => {
+    console.log("posting item");
+    console.log(newToDoItem);
+
     const data = {
       itemName: String(newToDoItem),
       listId: String(listId)
@@ -119,7 +158,7 @@ export default function App() {
 
     await axios.post('http://10.0.2.2:5197/NewList', data)
       .then(response => {
-        console.log("New list created");
+        console.log(`New list post sent for list: ${newToDoListname}`);
         console.log(response.status);
       })
       .catch(error => {
@@ -146,7 +185,8 @@ export default function App() {
           />
         <Switch
         onValueChange={() => ToggleCompletitionOfItem(isComplete, id, listId)}
-        value={toDoList[id].isComplete}
+        //value={toDoLists[listId][id].isComplete}
+        value={false}
         />
         <Pressable onPress={() => handleOnPress(id)}>
           <Text>Delete</Text>
@@ -155,47 +195,56 @@ export default function App() {
     )
   };
 
-  const ToDoList = ({listName, listId}) => {
-    const [listId, setListId] = useState(listId);
-    const [listName, setListName] = useState(listName);
-    const [newToDoItem, changeNewToDoItemText] = React.useState(null);
-    <View>
-      <Text>{listName}</Text>
-      <TextInput 
-        value={newToDoItem} 
-        onChangeText={changeNewToDoItemText}
-        onSubmitEditing={async() => {
-          // Nseed to add input sanity check
-          if (newToDoItem != null) {
-            await postNewItem(newToDoItem, listId);
-            // Updates and re-render list with new item
-            getToDoList();
-            changeNewToDoItemText(null);
-          }
-        }}
-        placeholder='Write yourself an objetive' />
-        
-        {isLoading ? (
-          <Text>Loading...</Text> // Display loading message while data is being fetched
-        ) : (
-          toDoList.length > 0 && 
-          <Text></Text>
-          
-        )}
+  const ToDoList = ({listName, listId, listOfItems}) => {
+    console.log("rendering list:");
+    console.log(listName);
+    console.log(listOfItems);
 
-        <FlatList
-          horizontal={false}
-          data={toDoList}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => <ToDoItem name={item.name} isComplete={item.isComplete} id={item.id} listId={listId}/>}
-        />
-      </View>
+    const [newToDoItem, changeNewToDoItemText] = React.useState(null);
+    return(
+      <View>
+        <Text>{listName}</Text>
+        <TextInput 
+          value={newToDoItem} 
+          onChangeText={changeNewToDoItemText}
+          onSubmitEditing={async() => {
+            // Nseed to add input sanity check
+            if (newToDoItem != null) {
+              await postNewItem(newToDoItem, listId);
+              // Updates and re-render list with new item
+              ///getToDoList();
+              GetAllToDoLists();
+              changeNewToDoItemText(null);
+            }
+          }}
+          placeholder='Write yourself an objetive' />
+          
+          {isLoading ? (
+            <Text>Loading...</Text> // Display loading message while data is being fetched
+          ) : (
+            toDoList.length > 0 && 
+            <Text></Text>
+            
+          )}
+
+          {
+          ( listOfItems.length != 0) ? 
+          (<FlatList
+            horizontal={false}
+            data={toDoLists[listId].listOfToDoItems}
+            keyExtractor={item => item.id}
+            renderItem={({item}) => <ToDoItem name={item.name} isComplete={item.isComplete} id={item.id} listId={listId}/>}
+          />)
+          :
+          (<Text>No items added to list</Text>)}
+
+        </View>
+    );
   }
 
-  return (
+    return (
     (
     <View style={styles.container}>
-      <StatusBar style="auto"/>
       <TextInput 
           placeholder="Create new to do list!"
           //onBlur={handleBlur}
@@ -205,21 +254,29 @@ export default function App() {
             // Nseed to add input sanity check
             if (newToDoListname != null) {
               await postNewList();
+              GetAllToDoLists();
               // Updates and re-render list with new item
               setToDoListname(null);
             }
           }}
           />
-      <ToDoList listName={newToDoListname}/>
-      <FlatList
+          {console.log("AAAAAAAAAAA")}
+          {console.log(toDoLists)}
+
+          { toDoLists.length != 0 ? 
+          (
+          <FlatList
+          ListEmptyComponent={<Text>No lists created!</Text>}
           horizontal={false}
           data={toDoLists}
-          keyExtractor={list => list.id}
-          renderItem={({list}) => <ToDoList listName={list.name} listId={list.id}/>}
-        />
+          keyExtractor={item => item.id}
+          renderItem={({item}) => <ToDoList listName={item.listName} listId={item.id} listOfItems={item.listOfToDoItems}/>}
+          />)
+          : (<Text>No lists added!</Text>)
+          }
     </View>
     )
-    );
+  );
 }
 
 const styles = StyleSheet.create({

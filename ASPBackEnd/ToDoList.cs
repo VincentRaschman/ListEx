@@ -3,16 +3,19 @@ public class ToDoList
     public List<ToDoItem> ListOfToDoItems { get; set; }
     public string ListName{ get; set;}
     public int Id { get;}
+    public bool IsEmpty{ get; set;}
     public ToDoList(string listName, int id)
     {
         ListName = listName;
         ListOfToDoItems = new List<ToDoItem>();
         Id = id;
+        IsEmpty = true;
     }
     public void AddItem(string name, string? tag = null)
     {
         ToDoItem newToDoItem = new ToDoItem(ListOfToDoItems.Count(), name, tag);
         ListOfToDoItems.Add(newToDoItem);
+        IsEmpty = false;
     }
     public void ToggleItem(int itemId)
     {
@@ -25,6 +28,8 @@ public class ToDoList
     public void DeleteItem(int itemId)
     {
         ListOfToDoItems.RemoveAt(itemId);
+        if(ListOfToDoItems.Count == 0)
+            IsEmpty = true;
     }
     public static void WriteOutTheContentOfAList(ToDoList toDoListToWriteOut)
     {

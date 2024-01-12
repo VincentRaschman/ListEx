@@ -70,8 +70,9 @@ app.MapPost("/NewList", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);
     var listName = jsonDocument.RootElement.GetProperty("listName").GetString();
-    var toDoList = new ToDoList(listName, toDoLists.Count());
-    toDoLists.Add(toDoList);
+
+    var newToDoList = new ToDoList(listName, toDoLists.Count());
+    toDoLists.Add(newToDoList);
     Console.WriteLine("List {0} created", listName);
 });
 
