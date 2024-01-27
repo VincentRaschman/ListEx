@@ -2,61 +2,34 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, Switch, Pressable} from 'react-native';
 import axios from 'axios';
+import ToDoList from './CustomComponents/ToDoList';
 
 export default function App() {
-  const [toDoList, setToDoList] = useState([]);
   const [toDoLists, setToDoLists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newToDoListname, setToDoListname] = useState(null)
+  const [newToDoListName, setToDoListName] = useState(null)
 
   useEffect(() => {
-    console.log("useEffect hook triggered");
+    console.log("first useEffect hook triggered");
     GetAllToDoLists();
   }, []);
 
   useEffect(() => {
-    console.log("All lists returned from the server:");
-    console.log("Lists in memory:");
-    console.log(toDoLists);
-    console.log("Foreach log:");
-    toDoLists.forEach(item => console.log(item.listName));
-
-    console.log("Logging first lists items:");
-    //console.log(toDoLists[0].listOfToDoItems);
-    //toDoLists[0].isEmpty ? (console.log("empty")) : (console.log("not empty"));
-    
+    console.log("Get lists has run:");
+   
     if(toDoLists != [] && typeof toDoLists != "undefined" && typeof toDoLists != null)
     {
-      console.log("vsetko je ok");
-      console.log(typeof toDoLists);
-      console.log(Array.isArray(toDoLists));
-      console.log(toDoLists);
-      console.log(toDoLists.length);
-
       if (toDoLists.length == 0) {
-        console.log("ziadne listy nie su na frontende");
+        console.log("state variable of to do lists is empty");
       }
-      console.log(typeof toDoLists[0]);
-      console.log(typeof toDoLists[1]);
-
-      /*console.log(toDoLists[0].listOfToDoItems);
-      console.log(toDoLists[1].listOfToDoItems);*/
-
     }
     else
     {
-      console.log("vsetko je na hovno");
+      console.log("toDoLists is an unexpected type");
     }
-
 
     setIsLoading(false);
   }, [toDoLists]);
-
-  const Pastika = () => {
-    axios.get('http://10.0.2.2:5197/martin')
-    .then(response => console.log(response.data))
-    .catch(console.error);
-  }
 
   /*const getToDoList = (id) => {
     axios.get(`http://10.0.2.2:5197/GetOneToDoList?id=${id}`)
@@ -77,88 +50,31 @@ export default function App() {
       }).catch(console.error);
   }
 
-  const ToggleCompletitionOfItem = (isComplete, id, listId) => {
+  const DeleteList = (listId) => {
     const data = {
-      message: String(isComplete),
-      id: String(id),
-      listId: String(listId)
+      ListId: String(listId)
     };
 
-    axios.post('http://10.0.2.2:5197/ToggleCompletitionOfItem', data)
+    axios.post('http://10.0.2.2:5197/DeleteList', data)
       .then(response => {
-        console.log("hurmakaki");
-        GetAllToDoLists();
-        ///getToDoList();
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  }
-
-  const ChangeItemName = (newName, id, listId) => {
-    const data = {
-      newName: String(newName),
-      id: String(id),
-      listId: String(listId)
-    };
-
-    axios.post('http://10.0.2.2:5197/ChangeNameOfAnItem', data)
-      .then(response => {
-        console.log("Sending new name to backend");
-        GetAllToDoLists();
-        ///getToDoList();
-      })
-      .catch(error => {
-        console.log("New item name was not sent to server");
-        console.error(error);
-      });
-  }
-
-  const DeleteItem = (id) => {
-    const data = {
-      id: String(id)
-    };
-
-    axios.post('http://10.0.2.2:5197/DeleteItem', data)
-      .then(response => {
-        console.log("Deleting item");
+        console.log("Deleting List");
         ///getToDoList();
         GetAllToDoLists();
       })
       .catch(error => {
-        console.log("Item was not deleted");
-        console.error(error);
-      });
-  }
-
-  const postNewItem = async (newToDoItem, listId) => {
-    console.log("posting item");
-    console.log(newToDoItem);
-
-    const data = {
-      itemName: String(newToDoItem),
-      listId: String(listId)
-    };
-
-    await axios.post('http://10.0.2.2:5197/NewItem', data)
-      .then(response => {
-        console.log("New item sent to server");
-        console.log(response.status);
-      })
-      .catch(error => {
-        console.log("New Item was not sent to server");
+        console.log("List was not deleted");
         console.error(error);
       });
   }
 
   const postNewList= async () => {
     const data = {
-      listName: String(newToDoListname)
+      listName: String(newToDoListName)
     };
 
     await axios.post('http://10.0.2.2:5197/NewList', data)
       .then(response => {
-        console.log(`New list post sent for list: ${newToDoListname}`);
+        console.log(`New list post sent for list: ${newToDoListName}`);
         console.log(response.status);
       })
       .catch(error => {
@@ -167,101 +83,24 @@ export default function App() {
       });
   }
 
-  const ToDoItem = ({name, isComplete, id, listId}) => {
-    const [itemName, setItemName] = useState(name);
-    const handleBlur = () => { 
-      (name ==  itemName) ? () => {console.log("terneri condition");} : ChangeItemName(itemName, id, listId)
-    };
-    const handleOnPress = (id) => { 
-      DeleteItem(id, listId)
-    };
-    return(
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <TextInput 
-          placeholder="Write yourself an objetive"
-          onBlur={handleBlur}
-          value={itemName} 
-          onChangeText={setItemName}
-          />
-        <Switch
-        onValueChange={() => ToggleCompletitionOfItem(isComplete, id, listId)}
-        //value={toDoLists[listId][id].isComplete}
-        value={false}
-        />
-        <Pressable onPress={() => handleOnPress(id)}>
-          <Text>Delete</Text>
-        </Pressable>
-      </View>
-    )
-  };
-
-  const ToDoList = ({listName, listId, listOfItems}) => {
-    console.log("rendering list:");
-    console.log(listName);
-    console.log(listOfItems);
-
-    const [newToDoItem, changeNewToDoItemText] = React.useState(null);
-    return(
-      <View>
-        <Text>{listName}</Text>
-        <TextInput 
-          value={newToDoItem} 
-          onChangeText={changeNewToDoItemText}
-          onSubmitEditing={async() => {
-            // Nseed to add input sanity check
-            if (newToDoItem != null) {
-              await postNewItem(newToDoItem, listId);
-              // Updates and re-render list with new item
-              ///getToDoList();
-              GetAllToDoLists();
-              changeNewToDoItemText(null);
-            }
-          }}
-          placeholder='Write yourself an objetive' />
-          
-          {isLoading ? (
-            <Text>Loading...</Text> // Display loading message while data is being fetched
-          ) : (
-            toDoList.length > 0 && 
-            <Text></Text>
-            
-          )}
-
-          {
-          ( listOfItems.length != 0) ? 
-          (<FlatList
-            horizontal={false}
-            data={toDoLists[listId].listOfToDoItems}
-            keyExtractor={item => item.id}
-            renderItem={({item}) => <ToDoItem name={item.name} isComplete={item.isComplete} id={item.id} listId={listId}/>}
-          />)
-          :
-          (<Text>No items added to list</Text>)}
-
-        </View>
-    );
-  }
-
     return (
     (
     <View style={styles.container}>
       <TextInput 
           placeholder="Create new to do list!"
           //onBlur={handleBlur}
-          value={newToDoListname} 
-          onChangeText={setToDoListname}
+          value={newToDoListName} 
+          onChangeText={setToDoListName}
           onSubmitEditing={async() => {
             // Nseed to add input sanity check
-            if (newToDoListname != null) {
+            if (newToDoListName != null) {
               await postNewList();
               GetAllToDoLists();
               // Updates and re-render list with new item
-              setToDoListname(null);
+              setToDoListName(null);
             }
           }}
           />
-          {console.log("AAAAAAAAAAA")}
-          {console.log(toDoLists)}
 
           { toDoLists.length != 0 ? 
           (
@@ -270,7 +109,8 @@ export default function App() {
           horizontal={false}
           data={toDoLists}
           keyExtractor={item => item.id}
-          renderItem={({item}) => <ToDoList listName={item.listName} listId={item.id} listOfItems={item.listOfToDoItems}/>}
+          renderItem={({item}) => <ToDoList allListData={item} isLoading={isLoading} DeleteList={DeleteList}
+          GetAllToDoLists={GetAllToDoLists}/>}
           />)
           : (<Text>No lists added!</Text>)
           }

@@ -8,10 +8,6 @@ var toDoLists = new List<ToDoList>();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/pivo", () => "Plzeň");
-
-app.MapGet("/martin", () => "Paštika");
-
 app.MapGet("/GetOneToDoList", ([FromQuery] int listId) => {
     Console.WriteLine("Returning list with id:{0}", listId);
     return toDoLists[listId];
@@ -37,7 +33,7 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
     ToDoList.WriteOutTheContentOfAList(toDoLists[listId]);
 });
 
-app.MapPost("/ToggleCompletitionOfItem", async (HttpRequest request) => {
+app.MapPost("/ToggleCompletionOfItem", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);
     var oldState = bool.Parse(jsonDocument.RootElement.GetProperty("message").GetString());
@@ -61,7 +57,7 @@ app.MapPost("/DeleteItem", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
-    var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
+    var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("ListId").GetString());
     Console.WriteLine("Deleting item {0} in list {1}", itemId, listId);
     toDoLists[listId].DeleteItem(itemId);
 });
@@ -74,6 +70,14 @@ app.MapPost("/NewList", async (HttpRequest request) => {
     var newToDoList = new ToDoList(listName, toDoLists.Count());
     toDoLists.Add(newToDoList);
     Console.WriteLine("List {0} created", listName);
+});
+
+app.MapPost("/DeleteList", async (HttpRequest request) => {
+    var body = await new StreamReader(request.Body).ReadToEndAsync();
+    var jsonDocument = JsonDocument.Parse(body);
+    var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("ListId").GetString());
+    Console.WriteLine("Deleting list {0}", listId);
+    toDoLists.RemoveAt(listId);
 });
 
 app.Run();
