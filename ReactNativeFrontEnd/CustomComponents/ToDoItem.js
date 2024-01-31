@@ -43,31 +43,20 @@ export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, To
       ChangeTag(newTag, id);
       setTag(newTag);
     };
+
+    const colors = ['white', 'red', 'green', 'blue', 'yellow'];
     return(
       <>
-        {isChoosingTag ? (
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Pressable onPress={() => handleOnPress_ChangeTag('white')}>
-            <View style={[styles.tag, {backgroundColor: 'white'}]}>
+        {
+        isChoosingTag ? (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          {colors.map(color => (
+          <Pressable key={color} onPress={() => handleOnPress_ChangeTag(color)}>
+            <View style={[styles.tag, {backgroundColor: color}]}>
             </View>
-            </Pressable>
-            <Pressable onPress={() => handleOnPress_ChangeTag('red')}>
-              <View style={[styles.tag, {backgroundColor: 'red'}]}>
-              </View>
-            </Pressable>
-            <Pressable onPress={() => handleOnPress_ChangeTag('green')}>
-              <View style={[styles.tag, {backgroundColor: 'green'}]}>
-              </View>
-            </Pressable>
-            <Pressable onPress={() => handleOnPress_ChangeTag('blue')}>
-              <View style={[styles.tag, {backgroundColor: 'blue'}]}>
-              </View>
-            </Pressable>
-            <Pressable onPress={() => handleOnPress_ChangeTag('yellow')}>
-              <View style={[styles.tag, {backgroundColor: 'yellow'}]}>
-              </View>
-            </Pressable>
-          </View>
+          </Pressable>
+          ))}
+        </View>
         ) : (
           <></>
         )}
