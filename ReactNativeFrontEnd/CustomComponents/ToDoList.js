@@ -95,6 +95,25 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
           });
     }
 
+    const ChangeTag = (newTag, itemId) => {
+      const data = {
+        newTag: String(newTag),
+        id: String(itemId),
+        listId: String(listId)
+      };
+  
+      axios.post('http://10.0.2.2:5197/ChangeTag', data)
+        .then(response => {
+          console.log("Sending new tag to bach end");
+          GetAllToDoLists();
+          ///getToDoList();
+        })
+        .catch(error => {
+          console.log("Items Tag was not changed");
+          console.error(error);
+        });
+    }
+
     const handleOnPress_DeleteList = () => { 
       DeleteList(listId)
     };
@@ -136,7 +155,7 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
             horizontal={false}
             data={listOfToDoItems}
             keyExtractor={item => item.id}
-            renderItem={({item}) => <ToDoItem allItemData={item} listId={listId} DeleteItem={DeleteItem} ToggleCompletitionOfItem={ToggleCompletionOfItem}
+            renderItem={({item}) => <ToDoItem allItemData={item} listId={listId} ChangeTag={ChangeTag} DeleteItem={DeleteItem} ToggleCompletitionOfItem={ToggleCompletionOfItem}
              ChangeItemName={ChangeItemName}/>}
           />)
           :

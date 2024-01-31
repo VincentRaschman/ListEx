@@ -27,7 +27,7 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
     var itemName = jsonDocument.RootElement.GetProperty("itemName").GetString();
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
 
-    toDoLists[listId].AddItem(itemName);
+    toDoLists[listId].AddItem(itemName, "white");
     Console.WriteLine("koncim post, item vytvoreny : {0}", itemName);
     Console.WriteLine("Cely list:");
     ToDoList.WriteOutTheContentOfAList(toDoLists[listId]);
@@ -51,6 +51,16 @@ app.MapPost("/ChangeNameOfAnItem", async (HttpRequest request) => {
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
     Console.WriteLine("Changing name of item with id: {0} in list with id:{1} to new name {2}", itemId, listId, newName);
     toDoLists[listId].ChangeNameOfAnItem(itemId, newName);
+});
+
+app.MapPost("/ChangeTag", async (HttpRequest request) => {
+    var body = await new StreamReader(request.Body).ReadToEndAsync();
+    var jsonDocument = JsonDocument.Parse(body);
+    var newTag = jsonDocument.RootElement.GetProperty("newTag").GetString();
+    var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
+    var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
+    Console.WriteLine("Changing tag of item with id: {0} in list with id:{1}", itemId, listId);
+    toDoLists[listId].ChangeTagOfAnItem(itemId, newTag);
 });
 
 app.MapPost("/DeleteItem", async (HttpRequest request) => {
