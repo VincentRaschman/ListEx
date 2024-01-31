@@ -86,7 +86,10 @@ export default function App() {
     return (
     (
     <View style={styles.container}>
-      <TextInput 
+      <View style={[styles.itemWrapper, styles.textInputItem]}>
+        <TextInput 
+          style={styles.textInput}
+          placeholderTextColor="#816797"
           placeholder="Create new to do list!"
           //onBlur={handleBlur}
           value={newToDoListName} 
@@ -101,18 +104,19 @@ export default function App() {
             }
           }}
           />
+      </View>
 
           { toDoLists.length != 0 ? 
           (
           <FlatList
-          ListEmptyComponent={<Text>No lists created!</Text>}
+          ListEmptyComponent={<Text style={styles.regularText}>No lists created!</Text>}
           horizontal={false}
           data={toDoLists}
           keyExtractor={item => item.id}
           renderItem={({item}) => <ToDoList allListData={item} isLoading={isLoading} DeleteList={DeleteList}
           GetAllToDoLists={GetAllToDoLists}/>}
           />)
-          : (<Text>No lists added!</Text>)
+          : (<View style={[styles.itemWrapper, styles.missingItemsText]}><Text style={styles.regularText}>No lists added!</Text></View>)
           }
     </View>
     )
@@ -122,8 +126,37 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#1B2430',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    paddingTop: 30,
+    paddingLeft: '15%',
+    paddingRight: '15%',
+  },
+  textInput: {
+    color: '#D6D5A8',
+    backgroundColor: '#1B2430',
+    borderRadius: 10,
+    borderWidth: 3,
+    paddingLeft: 8,
+    paddingRight: 8,
+    borderColor: '#51557E',
+  },
+  textInputItem: {
+    backgroundColor: '#51557E',
+  },
+  itemWrapper: {
     alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: '#51557E',
+    borderWidth: 3,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  missingItemsText:{
+    borderColor: '#1B2430',
+  },
+  regularText: {
+    color: '#D6D5A8',
   },
 });

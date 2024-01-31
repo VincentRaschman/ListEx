@@ -10,12 +10,9 @@ export default function ToDoItem({allItemData, listId, DeleteItem, ToggleComplet
     
     useEffect(() => {
       console.log("item data from use effect");
-      console.log(allItemData.name);
-      console.log(allItemData.isComple);
-      console.log(allItemData.id);
 
       setItemName(allItemData.name);
-      setIsComplete(allItemData.isComple);
+      setIsComplete(allItemData.isComplete);
       setId(allItemData.id);
 
       console.log(itemName);
@@ -34,6 +31,8 @@ export default function ToDoItem({allItemData, listId, DeleteItem, ToggleComplet
     return(
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <TextInput 
+          style={styles.textInput}
+          placeholderTextColor="#2f2b3a"
           placeholder="An objetive"
           onBlur={handleBlur}
           value={itemName} 
@@ -45,8 +44,17 @@ export default function ToDoItem({allItemData, listId, DeleteItem, ToggleComplet
         //value={false}
         />
         <Pressable onPress={() => handleOnPress_DeleteItem(id, listId)}>
-          <Text>Delete</Text>
+          <Text style={styles.regularText}>Delete</Text>
         </Pressable>
       </View>
     )
   };
+
+const styles = StyleSheet.create({
+  regularText: {
+    color: '#D6D5A8',
+  },
+  textInput: {
+    color: '#D6D5A8',
+  },
+});

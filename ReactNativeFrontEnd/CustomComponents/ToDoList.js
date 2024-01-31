@@ -60,7 +60,7 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
 
     const ToggleCompletionOfItem = (isComplete, itemId) => {
         const data = {
-          message: String(isComplete),
+          switchState: String(isComplete),
           id: String(itemId),
           listId: String(listId)
         };
@@ -100,12 +100,14 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
     };
 
     return(
-      <View>
-        <Text>{listName}</Text>
+      <View style={styles.listWrapper}>
+        <Text style={styles.regularText}>{listName}</Text>
         <Pressable onPress={() => handleOnPress_DeleteList(listId)}>
-          <Text>Delete list</Text>
+          <Text style={styles.regularText} >Delete list</Text>
         </Pressable>
         <TextInput 
+          style={styles.textInput}
+          placeholderTextColor="#1B2430"
           value={newToDoItem} 
           onChangeText={changeNewToDoItemText}
           onSubmitEditing={async() => {
@@ -121,7 +123,7 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
           placeholder='Write yourself an objetive' />
           
           { isLoading ? (
-            <Text>Loading...</Text> // Display loading message while data is being fetched
+            <Text >Loading...</Text> // Display loading message while data is being fetched
           ) : (
             listOfToDoItems.length > 0 && 
             <Text></Text>
@@ -138,8 +140,30 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
              ChangeItemName={ChangeItemName}/>}
           />)
           :
-          (<Text>No items added to list</Text>)}
+          (<Text style={styles.regularText}>No items added to list</Text>)}
 
         </View>
     );
   }
+
+const styles = StyleSheet.create({
+  listWrapper: {
+    alignItems: 'center',
+    borderColor: '#51557E',
+    borderWidth: 3,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  regularText: {
+    color: '#D6D5A8',
+  },
+  textInput: {
+    marginTop: 10,
+    backgroundColor: '#51557E',
+    paddingLeft: 10,
+    paddingRight: 10,
+    borderRadius: 10,
+    color: '#D6D5A8',
+  },
+});

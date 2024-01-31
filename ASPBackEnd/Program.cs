@@ -36,7 +36,7 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
 app.MapPost("/ToggleCompletionOfItem", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);
-    var oldState = bool.Parse(jsonDocument.RootElement.GetProperty("message").GetString());
+    var oldState = bool.Parse(jsonDocument.RootElement.GetProperty("switchState").GetString());
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
     Console.WriteLine("Items: {0} in list:{1}completion attribute was toggled. Old state {2}", itemId, listId, oldState);
