@@ -2,16 +2,13 @@ import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Pressable} from 'react-native';
 import axios from 'axios';
 
-export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, ToggleCompletitionOfItem, ChangeItemName}){
+export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, ToggleCompletitionOfItem, ChangeItemName, isDarkModeOn}){
     const [itemName, setItemName] = useState("No items added to this list");
     const [isComplete, setIsComplete] = useState(false);
     const [id, setId] = useState(-1);
     const [tag, setTag] = useState('white');
     const [isChoosingTag, setIsChoosingTag] = useState(false);
-
-
-    //const [itemTag, setTag] = useState(allItemData.);
-    
+      
     useEffect(() => {
       console.log("item data from use effect");
 
@@ -44,6 +41,23 @@ export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, To
       setTag(newTag);
     };
 
+    const styles = StyleSheet.create({
+      regularText: {
+        color: isDarkModeOn ? '#D6D5A8' : '#FFF2F2',
+      },
+      textInput: {
+        color: isDarkModeOn ? '#D6D5A8' : '#FFF2F2',
+      },
+      tag: {
+        padding: 10,
+        marginTop: 10,
+        marginBottom: 10,
+        borderRadius: 8,
+        borderWidth: 3,
+        borderColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+      },
+    });
+
     const colors = ['white', 'red', 'green', 'blue', 'yellow'];
     return(
       <>
@@ -64,7 +78,7 @@ export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, To
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TextInput 
             style={styles.textInput}
-            placeholderTextColor="#2f2b3a"
+            placeholderTextColor= { isDarkModeOn ? "#2f2b3a" : '#E5E0FF'}
             placeholder="An objetive"
             onBlur={handleBlur}
             value={itemName} 
@@ -86,20 +100,3 @@ export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, To
       </>
     )
   };
-
-const styles = StyleSheet.create({
-  regularText: {
-    color: '#D6D5A8',
-  },
-  textInput: {
-    color: '#D6D5A8',
-  },
-  tag: {
-    padding: 10,
-    marginTop: 10,
-    marginBottom: 10,
-    borderRadius: 8,
-    borderWidth: 3,
-    borderColor: '#51557E',
-  },
-});

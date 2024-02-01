@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, Switch, Pressable} from 'react-native';
 import axios from 'axios';
@@ -8,6 +7,8 @@ export default function App() {
   const [toDoLists, setToDoLists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newToDoListName, setToDoListName] = useState(null)
+
+  const [isDarkModeOn, setIsDarkModeOn] = useState(false);
 
   useEffect(() => {
     console.log("first useEffect hook triggered");
@@ -30,18 +31,6 @@ export default function App() {
 
     setIsLoading(false);
   }, [toDoLists]);
-
-  /*const getToDoList = (id) => {
-    axios.get(`http://10.0.2.2:5197/GetOneToDoList?id=${id}`)
-      .then((response) => {
-        setToDoList(response.data.listOfToDoItems);
-      })
-      .then(() => {
-        console.log(toDoList);
-        toDoList.forEach(item => console.log(item.name));
-      })
-      .catch(console.error);
-  }*/
 
   const GetAllToDoLists = async() => {
     axios.get(`http://10.0.2.2:5197/GetAllToDoLists`)
@@ -83,80 +72,84 @@ export default function App() {
       });
   }
 
+  const handleOnPress_ChangeColoTheme = () => { 
+    setIsDarkModeOn(!isDarkModeOn);
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDarkModeOn ? '#1B2430' : '#7286D3',
+      alignItems: 'stretch',
+      justifyContent: 'flex-start',
+      paddingTop: 30,
+      paddingLeft: '15%',
+      paddingRight: '15%',
+    },
+    textInput: {
+      color: isDarkModeOn ? '#D6D5A8' : '#FFF2F2',
+      backgroundColor: isDarkModeOn ? '#1B2430' : '#7286D3',
+      borderRadius: 10,
+      borderWidth: 3,
+      paddingLeft: 8,
+      paddingRight: 8,
+      borderColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+    },
+    textInputItem: {
+      backgroundColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+    },
+    itemWrapper: {
+      alignItems: 'center',
+      borderColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+      borderWidth: 3,
+      padding: 10,
+      marginBottom: 10,
+      borderRadius: 10,
+    },
+    missingItemsText:{
+      borderColor: isDarkModeOn ? '#1B2430' : '#7286D3',
+    },
+    regularText: {
+      color: isDarkModeOn ? '#D6D5A8': '#FFF2F2',
+    },
+  });
+
     return (
     (
     <View style={styles.container}>
-      <View style={[styles.itemWrapper, styles.textInputItem]}>
-        <TextInput 
-          style={styles.textInput}
-          placeholderTextColor="#816797"
-          placeholder="Create new to do list!"
-          //onBlur={handleBlur}
-          value={newToDoListName} 
-          onChangeText={setToDoListName}
-          onSubmitEditing={async() => {
-            // Nseed to add input sanity check
-            if (newToDoListName != null) {
-              await postNewList();
-              GetAllToDoLists();
-              // Updates and re-render list with new item
-              setToDoListName(null);
-            }
-          }}
+      <Pressable onPress={() => handleOnPress_ChangeColoTheme()}>
+        <View style={[styles.itemWrapper, styles.textInputItem]}>
+          <TextInput 
+            style={styles.textInput}
+            placeholderTextColor= {isDarkModeOn ? "#816797" : '#E5E0FF'}
+            placeholder="Create new to do list!"
+            value={newToDoListName} 
+            onChangeText={setToDoListName}
+            onSubmitEditing={async() => {
+              // Nseed to add input sanity check
+              if (newToDoListName != null) {
+                await postNewList();
+                GetAllToDoLists();
+                // Updates and re-render list with new item
+                setToDoListName(null);
+              }
+            }}
           />
-      </View>
-
-          { toDoLists.length != 0 ? 
-          (
-          <FlatList
-          ListEmptyComponent={<Text style={styles.regularText}>No lists created!</Text>}
-          horizontal={false}
-          data={toDoLists}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => <ToDoList allListData={item} isLoading={isLoading} DeleteList={DeleteList}
-          GetAllToDoLists={GetAllToDoLists}/>}
-          />)
-          : (<View style={[styles.itemWrapper, styles.missingItemsText]}><Text style={styles.regularText}>No lists added!</Text></View>)
-          }
+        </View>
+      </Pressable>
+      { toDoLists.length != 0 ? 
+      (
+      <FlatList
+      ListEmptyComponent={<Text style={styles.regularText}>No lists created!</Text>}
+      horizontal={false}
+      data={toDoLists}
+      keyExtractor={item => item.id}
+      renderItem={({item}) => <ToDoList allListData={item} isLoading={isLoading} DeleteList={DeleteList}
+      GetAllToDoLists={GetAllToDoLists} isDarkModeOn={isDarkModeOn}/>}
+      />)
+      : (<View style={[styles.itemWrapper, styles.missingItemsText]}><Text style={styles.regularText}>No lists added!</Text></View>)
+      }
     </View>
     )
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1B2430',
-    alignItems: 'stretch',
-    justifyContent: 'flex-start',
-    paddingTop: 30,
-    paddingLeft: '15%',
-    paddingRight: '15%',
-  },
-  textInput: {
-    color: '#D6D5A8',
-    backgroundColor: '#1B2430',
-    borderRadius: 10,
-    borderWidth: 3,
-    paddingLeft: 8,
-    paddingRight: 8,
-    borderColor: '#51557E',
-  },
-  textInputItem: {
-    backgroundColor: '#51557E',
-  },
-  itemWrapper: {
-    alignItems: 'center',
-    borderColor: '#51557E',
-    borderWidth: 3,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 10,
-  },
-  missingItemsText:{
-    borderColor: '#1B2430',
-  },
-  regularText: {
-    color: '#D6D5A8',
-  },
-});

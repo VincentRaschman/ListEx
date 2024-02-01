@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TextInput, FlatList, Switch, Pressable} from 'r
 import axios from 'axios';
 import ToDoItem from "./ToDoItem";
 
-export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDoLists}) {
+export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDoLists, isDarkModeOn}) {
     const [newToDoItem, changeNewToDoItemText] = useState(null);
     const [listName, setListName] = useState(allListData.listName);
     const [listId, setListId] = useState(allListData.id);
@@ -118,6 +118,28 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
       DeleteList(listId)
     };
 
+    const styles = StyleSheet.create({
+      listWrapper: {
+        alignItems: 'center',
+        borderColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+        borderWidth: 3,
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 10,
+      },
+      regularText: {
+        color: isDarkModeOn ? '#D6D5A8' : '#FFF2F2',
+      },
+      textInput: {
+        marginTop: 10,
+        backgroundColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+        paddingLeft: 10,
+        paddingRight: 10,
+        borderRadius: 10,
+        color: isDarkModeOn ? '#D6D5A8' : '#FFF2F2',
+      },
+    });
+
     return(
       <View style={styles.listWrapper}>
         <Text style={styles.regularText}>{listName}</Text>
@@ -126,7 +148,7 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
         </Pressable>
         <TextInput 
           style={styles.textInput}
-          placeholderTextColor="#1B2430"
+          placeholderTextColor={ isDarkModeOn ? "#1B2430" : '#7286D3'}
           value={newToDoItem} 
           onChangeText={changeNewToDoItemText}
           onSubmitEditing={async() => {
@@ -156,7 +178,7 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
             data={listOfToDoItems}
             keyExtractor={item => item.id}
             renderItem={({item}) => <ToDoItem allItemData={item} listId={listId} ChangeTag={ChangeTag} DeleteItem={DeleteItem} ToggleCompletitionOfItem={ToggleCompletionOfItem}
-             ChangeItemName={ChangeItemName}/>}
+             ChangeItemName={ChangeItemName} isDarkModeOn={isDarkModeOn}/>}
           />)
           :
           (<Text style={styles.regularText}>No items added to list</Text>)}
@@ -164,25 +186,3 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
         </View>
     );
   }
-
-const styles = StyleSheet.create({
-  listWrapper: {
-    alignItems: 'center',
-    borderColor: '#51557E',
-    borderWidth: 3,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 10,
-  },
-  regularText: {
-    color: '#D6D5A8',
-  },
-  textInput: {
-    marginTop: 10,
-    backgroundColor: '#51557E',
-    paddingLeft: 10,
-    paddingRight: 10,
-    borderRadius: 10,
-    color: '#D6D5A8',
-  },
-});
