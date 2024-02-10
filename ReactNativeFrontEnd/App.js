@@ -97,9 +97,11 @@ export default function App() {
     },
     textInputItem: {
       backgroundColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+      flexDirection: 'row'
     },
     itemWrapper: {
       alignItems: 'center',
+      justifyContent: 'space-between',
       borderColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
       borderWidth: 3,
       padding: 10,
@@ -112,44 +114,58 @@ export default function App() {
     regularText: {
       color: isDarkModeOn ? '#D6D5A8': '#FFF2F2',
     },
+    colorThemeButton: {
+      backgroundColor: isDarkModeOn ? 'white': 'black',
+      padding: 10,
+      marginTop: 10,
+      marginBottom: 10,
+      borderRadius: 8,
+      borderWidth: 3,
+    },
+    spacefiller: {
+      padding: 10,
+      marginTop: 10,
+      marginBottom: 10,
+    },
   });
 
-    return (
+  return (
+  (
+  <View style={styles.container}>
+      <View style={[styles.itemWrapper, styles.textInputItem]}>
+        <Pressable onPress={() => handleOnPress_ChangeColoTheme()}>
+          <View style={styles.colorThemeButton}></View>
+        </Pressable>
+        <TextInput 
+          style={styles.textInput}
+          placeholderTextColor= {isDarkModeOn ? "#816797" : '#E5E0FF'}
+          placeholder="Create new to do list!"
+          value={newToDoListName} 
+          onChangeText={setToDoListName}
+          onSubmitEditing={async() => {
+            // Nseed to add input sanity check
+            if (newToDoListName != null) {
+              await postNewList();
+              GetAllToDoLists();
+              // Updates and re-render list with new item
+              setToDoListName(null);
+            }
+          }}
+        />
+        <View style={styles.spacefiller}></View>
+      </View>
+    { toDoLists.length != 0 ? 
     (
-    <View style={styles.container}>
-      <Pressable onPress={() => handleOnPress_ChangeColoTheme()}>
-        <View style={[styles.itemWrapper, styles.textInputItem]}>
-          <TextInput 
-            style={styles.textInput}
-            placeholderTextColor= {isDarkModeOn ? "#816797" : '#E5E0FF'}
-            placeholder="Create new to do list!"
-            value={newToDoListName} 
-            onChangeText={setToDoListName}
-            onSubmitEditing={async() => {
-              // Nseed to add input sanity check
-              if (newToDoListName != null) {
-                await postNewList();
-                GetAllToDoLists();
-                // Updates and re-render list with new item
-                setToDoListName(null);
-              }
-            }}
-          />
-        </View>
-      </Pressable>
-      { toDoLists.length != 0 ? 
-      (
-      <FlatList
-      ListEmptyComponent={<Text style={styles.regularText}>No lists created!</Text>}
-      horizontal={false}
-      data={toDoLists}
-      keyExtractor={item => item.id}
-      renderItem={({item}) => <ToDoList allListData={item} isLoading={isLoading} DeleteList={DeleteList}
-      GetAllToDoLists={GetAllToDoLists} isDarkModeOn={isDarkModeOn}/>}
-      />)
-      : (<View style={[styles.itemWrapper, styles.missingItemsText]}><Text style={styles.regularText}>No lists added!</Text></View>)
-      }
-    </View>
-    )
-  );
+    <FlatList
+    ListEmptyComponent={<Text style={styles.regularText}>No lists created!</Text>}
+    horizontal={false}
+    data={toDoLists}
+    keyExtractor={item => item.id}
+    renderItem={({item}) => <ToDoList allListData={item} isLoading={isLoading} DeleteList={DeleteList}
+    GetAllToDoLists={GetAllToDoLists} isDarkModeOn={isDarkModeOn}/>}
+    />)
+    : (<View style={[styles.itemWrapper, styles.missingItemsText]}><Text style={styles.regularText}>No lists added!</Text></View>)
+    }
+  </View>
+  ));
 }
