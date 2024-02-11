@@ -22,19 +22,48 @@ public class ToDoList
     }
     public void ToggleItem(int itemId)
     {
-        ListOfToDoItems[itemId].IsComplete = !(ListOfToDoItems[itemId].IsComplete);
+        foreach (var item in ListOfToDoItems)
+        {
+            if(item.Id == itemId)
+            {
+                ListOfToDoItems[ListOfToDoItems.IndexOf(item)].IsComplete = !(ListOfToDoItems[ListOfToDoItems.IndexOf(item)].IsComplete);
+                return;
+            }
+        }
     }
     public void ChangeNameOfAnItem(int itemId, string newName)
     {
-        ListOfToDoItems[itemId].Name = newName;
+        foreach (var item in ListOfToDoItems)
+        {
+            if(item.Id == itemId)
+            {
+                ListOfToDoItems[ListOfToDoItems.IndexOf(item)].Name = newName;
+                return;
+            }
+        }
     }
     public void ChangeTagOfAnItem(int itemId, string newTag)
     {
-        ListOfToDoItems[itemId].Tag = newTag;
+        foreach (var item in ListOfToDoItems)
+        {
+            if(item.Id == itemId)
+            {
+                ListOfToDoItems[ListOfToDoItems.IndexOf(item)].Tag = newTag;
+                return;
+            }
+        }
     }
     public void DeleteItem(int itemId)
     {
-        ListOfToDoItems.RemoveAt(itemId);
+        foreach (var item in ListOfToDoItems)
+        {
+            if(item.Id == itemId)
+            {
+                ListOfToDoItems.RemoveAt(ListOfToDoItems.IndexOf(item));
+                return;
+            }
+        }
+
         if(ListOfToDoItems.Count == 0)
             IsEmpty = true;
     }
