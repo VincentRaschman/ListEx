@@ -2,12 +2,13 @@ import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Pressable} from 'react-native';
 import axios from 'axios';
 
-export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, ToggleCompletitionOfItem, ChangeItemName, isDarkModeOn}){
+export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, idOfTheItemToRelocate, ToggleCompletitionOfItem, ChangeItemName, isDarkModeOn}){
     const [itemName, setItemName] = useState("No items added to this list");
     const [isComplete, setIsComplete] = useState(false);
     const [id, setId] = useState(-1);
     const [tag, setTag] = useState('white');
     const [isChoosingTag, setIsChoosingTag] = useState(false);
+    const [isChoosingNewPosition, setIsChoosingNewPosition] = useState(false);
       
     useEffect(() => {
       console.log("item data from use effect");
@@ -27,7 +28,19 @@ export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, To
     };
 
     const handleOnPress_DeleteItem = (id, listId) => { 
-      DeleteItem(id, listId)
+      DeleteItem(id, listId);
+    };
+    const handleOnPress_RelocateItem = (id) => {
+      if(isChoosingNewPosition == false)
+      {
+        idOfTheItemToRelocate(id);
+        setIsChoosingNewPosition(true);
+      }
+      else
+      {
+        idOfTheItemToRelocate(-1);
+        setIsChoosingNewPosition(false);
+      }
     };
     const handleOnPress_Tag = (id, listId) => { 
       console.log("handleOnPress Tag");
@@ -95,6 +108,9 @@ export default function ToDoItem({allItemData, listId, ChangeTag, DeleteItem, To
           />
           <Pressable onPress={() => handleOnPress_DeleteItem(id, listId)}>
             <Text style={styles.regularText}>Delete</Text>
+          </Pressable>
+          <Pressable onPress={() => handleOnPress_RelocateItem(id, listId)}>
+            <Text style={styles.regularText}>Relocate</Text>
           </Pressable>
         </View>
       </>

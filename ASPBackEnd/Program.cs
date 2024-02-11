@@ -72,6 +72,17 @@ app.MapPost("/DeleteItem", async (HttpRequest request) => {
     toDoLists[listId].DeleteItem(itemId);
 });
 
+app.MapPost("/RelocateItem", async (HttpRequest request) => {
+    var body = await new StreamReader(request.Body).ReadToEndAsync();
+    var jsonDocument = JsonDocument.Parse(body);
+    var newPlaceInList = Int32.Parse(jsonDocument.RootElement.GetProperty("newPlaceInList").GetString());
+    var idOfTheItemToRelocate = Int32.Parse(jsonDocument.RootElement.GetProperty("idOfTheItemToRelocate").GetString());
+    var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("ListId").GetString());
+
+    Console.WriteLine("Relocate item");
+    toDoLists[listId].MoveItem(idOfTheItemToRelocate, newPlaceInList);
+});
+
 app.MapPost("/NewList", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);

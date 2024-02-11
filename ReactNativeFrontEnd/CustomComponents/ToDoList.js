@@ -8,10 +8,23 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
     const [listName, setListName] = useState(allListData.listName);
     const [listId, setListId] = useState(allListData.id);
     const [listOfToDoItems, setListOfToDoItems] = useState([]);
+    const [isRelocatingItem, setIsRelocatingItem] = useState(false);
+    const [idOfTheItemToRelocate, setIdOfTheItemToRelocate] = useState(-1);
 
     useEffect(() => {
-      setListOfToDoItems(allListData.listOfToDoItems)
+      setListOfToDoItems(allListData.listOfToDoItems);
     }, [allListData.listOfToDoItems]);
+
+    useEffect(() => {
+      if(idOfTheItemToRelocate != -1)
+      {
+        setIsRelocatingItem(true);
+      }
+      else
+      {
+        setIsRelocatingItem(false);
+      }
+    }, [idOfTheItemToRelocate]);
 
     console.log("rendering list:");
     console.log(listName);
@@ -57,6 +70,27 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
             console.error(error);
           });
     }
+
+  const handleOnPress_RelocateItem = (relocateItemId) => {
+      const data = {
+        newPlaceInList: String(relocateItemId),
+        idOfTheItemToRelocate: String(idOfTheItemToRelocate),
+        ListId: String(listId)
+      };
+
+      setIdOfTheItemToRelocate(-1);
+
+      axios.post('http://10.0.2.2:5197/RelocateItem', data)
+        .then(response => {
+          console.log("Relocating item");
+          ///getToDoList();
+          GetAllToDoLists();
+        })
+        .catch(error => {
+          console.log("Item was not relocated");
+          console.error(error);
+        });
+  }
 
     const ToggleCompletionOfItem = (isComplete, itemId) => {
         const data = {
@@ -118,6 +152,14 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
       DeleteList(listId)
     };
 
+    const RelocateItem = ({relocateItemId}) => (
+      <Pressable onPress={() => handleOnPress_RelocateItem(relocateItemId)}>
+        <View style={styles.relocateItem}>
+          <Text style={styles.regularText}>Move item</Text>
+        </View>
+      </Pressable>
+    );
+
     const styles = StyleSheet.create({
       listWrapper: {
         alignItems: 'center',
@@ -137,6 +179,15 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
         paddingRight: 10,
         borderRadius: 10,
         color: isDarkModeOn ? '#D6D5A8' : '#FFF2F2',
+      },
+      relocateItem: {
+        alignItems: 'center',
+        borderColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+        backgroundColor: isDarkModeOn ? '#51557E' : '#8EA7E9',
+        borderWidth: 3,
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 10,
       },
     });
 
@@ -164,7 +215,7 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
           placeholder='Write yourself an objetive' />
           
           { isLoading ? (
-            <Text >Loading...</Text> // Display loading message while data is being fetched
+            <Text >Loading...</Text>
           ) : (
             listOfToDoItems.length > 0 && 
             <Text></Text>
@@ -173,16 +224,28 @@ export default function ToDoList({allListData, isLoading, DeleteList, GetAllToDo
 
           {
           ( listOfToDoItems.length != 0) ? 
-          (<FlatList
+          (
+          <View>
+            <FlatList
             horizontal={false}
             data={listOfToDoItems}
             keyExtractor={item => item.id}
-            renderItem={({item}) => <ToDoItem allItemData={item} listId={listId} ChangeTag={ChangeTag} DeleteItem={DeleteItem} ToggleCompletitionOfItem={ToggleCompletionOfItem}
-             ChangeItemName={ChangeItemName} isDarkModeOn={isDarkModeOn}/>}
-          />)
+            renderItem={({item}) => 
+             <View>
+              {isRelocatingItem ? (<RelocateItem relocateItemId={listOfToDoItems.indexOf(item)}/>) : (<></>)}
+
+              <ToDoItem allItemData={item} listId={listId} ChangeTag={ChangeTag}
+              DeleteItem={DeleteItem} idOfTheItemToRelocate={setIdOfTheItemToRelocate} ToggleCompletitionOfItem={ToggleCompletionOfItem}
+              ChangeItemName={ChangeItemName} isDarkModeOn={isDarkModeOn}/>
+             </View>
+            }
+            />
+            {isRelocatingItem ? (<RelocateItem relocateItemId={listOfToDoItems.length}/>) : (<></>)}
+          </View>
+          )
           :
           (<Text style={styles.regularText}>No items added to list</Text>)}
 
         </View>
     );
-  }
+}

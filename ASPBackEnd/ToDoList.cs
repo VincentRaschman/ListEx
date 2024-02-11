@@ -38,6 +38,31 @@ public class ToDoList
         if(ListOfToDoItems.Count == 0)
             IsEmpty = true;
     }
+    public void MoveItem(int idOfTheItemToRelocate, int newPlace)
+    {   
+        int currentPositionOfTheItem = -1;
+        ToDoItem itemMoved = null;
+        foreach (var item in ListOfToDoItems)
+        {
+            if(item.Id == idOfTheItemToRelocate)
+            {    
+                currentPositionOfTheItem = ListOfToDoItems.IndexOf(item);
+                itemMoved = item;
+                
+            }
+        }
+
+        ListOfToDoItems.RemoveAt(currentPositionOfTheItem);
+        
+        if(newPlace < currentPositionOfTheItem)
+        {
+            ListOfToDoItems.Insert(newPlace, itemMoved);
+        }
+        else
+        {
+            ListOfToDoItems.Insert(newPlace - 1, itemMoved);
+        }
+    }
     public static void WriteOutTheContentOfAList(ToDoList toDoListToWriteOut)
     {
         foreach(var item in toDoListToWriteOut.ListOfToDoItems)
