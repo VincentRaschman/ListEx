@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -10,12 +11,18 @@ app.MapGet("/", () => "Hello World!");
 
 app.MapGet("/GetOneToDoList", ([FromQuery] int listId) => {
     Console.WriteLine("Returning list with id:{0}", listId);
-    return toDoLists[listId];
+    using(var db = new ListContext())
+    {
+        return db.ToDoLists.Find(listId);
+    }
     });
 
 app.MapGet("/GetAllToDoLists", () => {
     Console.WriteLine("Returning All lists");
-    return toDoLists;
+     using(var db = new ListContext())
+    {
+        return db.ToDoLists.Include(o=>o.ListOfToDoItems).ToList();
+    }
     });
 
 app.MapPost("/NewItem", async (HttpRequest request) => {
@@ -27,7 +34,11 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
     var itemName = jsonDocument.RootElement.GetProperty("itemName").GetString();
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
 
-    toDoLists[listId].AddItem(itemName, "white");
+    using(var db = new ListContext())
+    {
+        db.ToDoLists.Find(listId).AddItem(itemName, "white");
+        db.SaveChanges();
+    }
     Console.WriteLine("koncim post, item vytvoreny : {0}", itemName);
     Console.WriteLine("Cely list:");
     ToDoList.WriteOutTheContentOfAList(toDoLists[listId]);
@@ -88,8 +99,16 @@ app.MapPost("/NewList", async (HttpRequest request) => {
     var jsonDocument = JsonDocument.Parse(body);
     var listName = jsonDocument.RootElement.GetProperty("listName").GetString();
 
-    var newToDoList = new ToDoList(listName, toDoLists.Count());
-    toDoLists.Add(newToDoList);
+    //var newToDoList = new ToDoList(listName, toDoLists.Count());
+    var newToDoList = new ToDoList();
+    newToDoList.ListName = listName;
+
+    using(var db = new ListContext())
+    {
+        db.Add(newToDoList);
+        db.SaveChanges();
+    }
+    //toDoLists.Add(newToDoList);
     Console.WriteLine("List {0} created", listName);
 });
 

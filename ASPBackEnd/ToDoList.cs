@@ -3,7 +3,7 @@ public class ToDoList
     public List<ToDoItem> ListOfToDoItems { get; set; }
     private int IdsGiven{ get; set; }
     public string ListName{ get; set;}
-    public int Id{ get;}
+    public int Id{ get; set;}
     public bool IsEmpty{ get; set;}
     public ToDoList(string listName, int id)
     {
@@ -11,6 +11,11 @@ public class ToDoList
         ListName = listName;
         ListOfToDoItems = new List<ToDoItem>();
         Id = id;
+        IsEmpty = true;
+    }
+    public ToDoList()
+    {
+        ListOfToDoItems = new List<ToDoItem>();
         IsEmpty = true;
     }
     public void AddItem(string name, string? tag = null)
