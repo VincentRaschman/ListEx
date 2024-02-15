@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-var toDoLists = new List<ToDoList>();
-
 app.MapGet("/", () => "Hello World!");
 
 app.MapGet("/GetOneToDoList", ([FromQuery] int listId) => {
@@ -21,7 +19,11 @@ app.MapGet("/GetAllToDoLists", () => {
     Console.WriteLine("Returning All lists");
      using(var db = new ListContext())
     {
-        return db.ToDoLists.Include(o=>o.ListOfToDoItems).ToList();
+        var toDoLists = db.ToDoLists.Include(o => o.ListOfToDoItems).ToList();
+        if (toDoLists.Count > 0)
+            toDoLists.ForEach(list => list.ListOfToDoItems = list.ListOfToDoItems.OrderBy(item => item.PositionInList).ToList());
+        return toDoLists;
+        //return db.ToDoLists.Include(o=>o.ListOfToDoItems).ToList();
     }
     });
 
@@ -36,12 +38,16 @@ app.MapPost("/NewItem", async (HttpRequest request) => {
 
     using(var db = new ListContext())
     {
-        db.ToDoLists.Find(listId).AddItem(itemName, "white");
+        var toDoLists = db.ToDoLists.Include(o => o.ListOfToDoItems).ToList();
+        toDoLists.ForEach( list => { if (list.Id == listId) list.AddItem(itemName, "white"); }) ;
+
+        /*ListOfToDoItems.ForEach(item => { if (item.PositionInList > itemMoved.PositionInList) item.PositionInList = item.PositionInList - 1; });
+
+        db.ToDoLists.Find(listId).AddItem(itemName, "white");*/
         db.SaveChanges();
     }
     Console.WriteLine("koncim post, item vytvoreny : {0}", itemName);
     Console.WriteLine("Cely list:");
-    ToDoList.WriteOutTheContentOfAList(toDoLists[listId]);
 });
 
 app.MapPost("/ToggleCompletionOfItem", async (HttpRequest request) => {
@@ -50,8 +56,14 @@ app.MapPost("/ToggleCompletionOfItem", async (HttpRequest request) => {
     var oldState = bool.Parse(jsonDocument.RootElement.GetProperty("switchState").GetString());
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
+    using(var db = new ListContext())
+    {
+        var listWithModifiedItem = db.ToDoLists.Include(o => o.ListOfToDoItems).FirstOrDefault(list => list.Id == listId);
+        listWithModifiedItem.ToggleItem(itemId);
+
+        db.SaveChanges();
+    }
     Console.WriteLine("Items: {0} in list:{1}completion attribute was toggled. Old state {2}", itemId, listId, oldState);
-    toDoLists[listId].ToggleItem(itemId);
 });
 
 app.MapPost("/ChangeNameOfAnItem", async (HttpRequest request) => {
@@ -60,8 +72,15 @@ app.MapPost("/ChangeNameOfAnItem", async (HttpRequest request) => {
     var newName = jsonDocument.RootElement.GetProperty("newName").GetString();
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
+
+    using(var db = new ListContext())
+    {
+        var listWithModifiedItem = db.ToDoLists.Include(o => o.ListOfToDoItems).FirstOrDefault(list => list.Id == listId);
+        listWithModifiedItem.ChangeNameOfAnItem(itemId, newName);
+        db.SaveChanges();
+    }
+
     Console.WriteLine("Changing name of item with id: {0} in list with id:{1} to new name {2}", itemId, listId, newName);
-    toDoLists[listId].ChangeNameOfAnItem(itemId, newName);
 });
 
 app.MapPost("/ChangeTag", async (HttpRequest request) => {
@@ -70,8 +89,14 @@ app.MapPost("/ChangeTag", async (HttpRequest request) => {
     var newTag = jsonDocument.RootElement.GetProperty("newTag").GetString();
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("listId").GetString());
+    using(var db = new ListContext())
+    {
+        var listWithModifiedItem = db.ToDoLists.Include(o => o.ListOfToDoItems).FirstOrDefault(list => list.Id == listId);
+        listWithModifiedItem.ChangeTagOfAnItem(itemId, newTag);
+
+        db.SaveChanges();
+    }
     Console.WriteLine("Changing tag of item with id: {0} in list with id:{1}", itemId, listId);
-    toDoLists[listId].ChangeTagOfAnItem(itemId, newTag);
 });
 
 app.MapPost("/DeleteItem", async (HttpRequest request) => {
@@ -79,8 +104,15 @@ app.MapPost("/DeleteItem", async (HttpRequest request) => {
     var jsonDocument = JsonDocument.Parse(body);
     var itemId = Int32.Parse(jsonDocument.RootElement.GetProperty("id").GetString());
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("ListId").GetString());
+
+    using(var db = new ListContext())
+    {
+        var listWithModifiedItem = db.ToDoLists.Include(o => o.ListOfToDoItems).FirstOrDefault(list => list.Id == listId);
+        listWithModifiedItem.DeleteItem(itemId);
+        db.SaveChanges();
+    }
+
     Console.WriteLine("Deleting item {0} in list {1}", itemId, listId);
-    toDoLists[listId].DeleteItem(itemId);
 });
 
 app.MapPost("/RelocateItem", async (HttpRequest request) => {
@@ -89,9 +121,14 @@ app.MapPost("/RelocateItem", async (HttpRequest request) => {
     var newPlaceInList = Int32.Parse(jsonDocument.RootElement.GetProperty("newPlaceInList").GetString());
     var idOfTheItemToRelocate = Int32.Parse(jsonDocument.RootElement.GetProperty("idOfTheItemToRelocate").GetString());
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("ListId").GetString());
+    using(var db = new ListContext())
+    {
+        var listWithModifiedItem = db.ToDoLists.Include(o => o.ListOfToDoItems).FirstOrDefault(list => list.Id == listId);
+        listWithModifiedItem.MoveItem(idOfTheItemToRelocate, newPlaceInList);
 
+        db.SaveChanges();
+    }
     Console.WriteLine("Relocate item");
-    toDoLists[listId].MoveItem(idOfTheItemToRelocate, newPlaceInList);
 });
 
 app.MapPost("/NewList", async (HttpRequest request) => {
@@ -116,8 +153,13 @@ app.MapPost("/DeleteList", async (HttpRequest request) => {
     var body = await new StreamReader(request.Body).ReadToEndAsync();
     var jsonDocument = JsonDocument.Parse(body);
     var listId = Int32.Parse(jsonDocument.RootElement.GetProperty("ListId").GetString());
+    using(var db = new ListContext())
+    {
+        var listWithModifiedItem = db.ToDoLists.Include(o => o.ListOfToDoItems).FirstOrDefault(list => list.Id == listId);
+        db.ToDoLists.Remove(listWithModifiedItem);
+        db.SaveChanges();
+    }
     Console.WriteLine("Deleting list {0}", listId);
-    toDoLists.RemoveAt(listId);
 });
 
 app.Run();

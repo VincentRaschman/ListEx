@@ -16,6 +16,15 @@ public class ListContext : DbContext
         DbPath = System.IO.Path.Join(path, "Database.db");
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder
+            .Entity<ToDoList>()
+            .HasMany(l => l.ListOfToDoItems)
+            .WithOne()
+            .OnDelete(DeleteBehavior.ClientCascade);
+    }
+
     // The following configures EF to create a Sqlite database file in the
     // special "local" folder for your platform.
     protected override void OnConfiguring(DbContextOptionsBuilder options)

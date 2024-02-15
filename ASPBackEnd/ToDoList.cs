@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 public class ToDoList
 {
     public List<ToDoItem> ListOfToDoItems { get; set; }
@@ -20,82 +21,61 @@ public class ToDoList
     }
     public void AddItem(string name, string? tag = null)
     {
-        ToDoItem newToDoItem = new ToDoItem(IdsGiven, name, tag);
+        ToDoItem newToDoItem = new ToDoItem(IdsGiven, name, ListOfToDoItems.Count, tag);
         IdsGiven++;
         ListOfToDoItems.Add(newToDoItem);
         IsEmpty = false;
     }
     public void ToggleItem(int itemId)
     {
-        foreach (var item in ListOfToDoItems)
-        {
-            if(item.Id == itemId)
-            {
-                ListOfToDoItems[ListOfToDoItems.IndexOf(item)].IsComplete = !(ListOfToDoItems[ListOfToDoItems.IndexOf(item)].IsComplete);
-                return;
-            }
-        }
+            var itemToModify = ListOfToDoItems.FirstOrDefault(item => item.Id == itemId);
+            itemToModify.IsComplete = (!itemToModify.IsComplete);
     }
     public void ChangeNameOfAnItem(int itemId, string newName)
     {
-        foreach (var item in ListOfToDoItems)
-        {
-            if(item.Id == itemId)
-            {
-                ListOfToDoItems[ListOfToDoItems.IndexOf(item)].Name = newName;
-                return;
-            }
-        }
+            var itemToModify = ListOfToDoItems.FirstOrDefault(item => item.Id == itemId);
+            itemToModify.Name = newName;
     }
     public void ChangeTagOfAnItem(int itemId, string newTag)
     {
-        foreach (var item in ListOfToDoItems)
+        using(var db = new ListContext())
         {
-            if(item.Id == itemId)
-            {
-                ListOfToDoItems[ListOfToDoItems.IndexOf(item)].Tag = newTag;
-                return;
-            }
-        }
+            var itemToModify = ListOfToDoItems.FirstOrDefault(item => item.Id == itemId);
+            itemToModify.Tag = newTag;
+            db.SaveChanges();
+        }                
     }
     public void DeleteItem(int itemId)
     {
-        foreach (var item in ListOfToDoItems)
+        using(var db = new ListContext())
         {
-            if(item.Id == itemId)
+            var itemToRemove = ListOfToDoItems.FirstOrDefault(i => i.Id == itemId);
+            if(itemToRemove != null)
             {
-                ListOfToDoItems.RemoveAt(ListOfToDoItems.IndexOf(item));
-                return;
+                db.ToDoItems.Remove(itemToRemove);
+                db.SaveChanges();
             }
         }
-
+ 
         if(ListOfToDoItems.Count == 0)
             IsEmpty = true;
     }
     public void MoveItem(int idOfTheItemToRelocate, int newPlace)
     {   
-        int currentPositionOfTheItem = -1;
         ToDoItem itemMoved = null;
-        foreach (var item in ListOfToDoItems)
-        {
-            if(item.Id == idOfTheItemToRelocate)
-            {    
-                currentPositionOfTheItem = ListOfToDoItems.IndexOf(item);
-                itemMoved = item;
-                
-            }
-        }
 
-        ListOfToDoItems.RemoveAt(currentPositionOfTheItem);
-        
-        if(newPlace < currentPositionOfTheItem)
+        itemMoved = ListOfToDoItems.FirstOrDefault(i => i.Id == idOfTheItemToRelocate);
+        ListOfToDoItems.ForEach(item => { if (item.PositionInList > itemMoved.PositionInList) item.PositionInList = item.PositionInList - 1; });
+
+        if(newPlace < itemMoved.PositionInList)
         {
-            ListOfToDoItems.Insert(newPlace, itemMoved);
+            itemMoved.PositionInList = newPlace;
         }
         else
         {
-            ListOfToDoItems.Insert(newPlace - 1, itemMoved);
+            itemMoved.PositionInList = newPlace - 1;
         }
+        ListOfToDoItems.ForEach(item => { if (item.PositionInList >= itemMoved.PositionInList && item.Id != idOfTheItemToRelocate) item.PositionInList = item.PositionInList + 1; });
     }
     public static void WriteOutTheContentOfAList(ToDoList toDoListToWriteOut)
     {
